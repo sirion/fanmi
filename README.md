@@ -5,9 +5,14 @@ Inpired by [amdgpu-fancontrol](https://github.com/grmat/amdgpu-fancontrol), but 
 My Vega56 automatic fan control under linux runs way to hot and radeon-profile for some reason segfaults on my machine, so I used [amdgpu-fancontrol](https://github.com/grmat/amdgpu-fancontrol), which worked like a charm, but I wanted the following features:
 
 - GUI
-- SUID root for the executable so I can start it wothout sudo
+- SUID root for the executable so I can start it without using sudo
 
 Also, I wanted to learn a new GUI-Framework with a simple project, that's why this one uses [fyne](https://fyne.io/).
+
+| GUI | Terminal |
+|-|-|
+| ![GUI Interface](doc/main_window01.png) | ![](doc/main_console01.png) <hr>![](doc/main_console02.png) |
+
 
 ## Getting started
 
