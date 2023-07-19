@@ -58,18 +58,26 @@ The default configuration would look like this:
 
 ### Exit codes
 
-| Code | Description |
-|-----|-|
-|   1 | Could not open device                         |
-|   2 | Could not find decive                         |
-|   3 | Could not find at least one compatible device |
-|   4 | Could not determine current user              |
-|   5 | You do not have (effective) root permissions  |
-|   6 | Could not read temperature                    |
-|   7 | Could not write to file                       |
-|   8 | Could not write fan speed                     |
-|   9 | Could not read fan speed                      |
-|  10 | Could not find user config directory          |
-|  11 | Could not read configuration file             |
-|  12 | Could not parse configuration file            |
+In addition to printing the error message to stderr, the application exits with an exitcode describing the problem:
 
+| Code | Description |
+|-|-|
+| 1 | Could not open device |
+| 2 | Could not find decive |
+| 3 | Could not find at least one compatible device |
+| 4 | Could not determine current user |
+| 5 | You do not have (effective) root permissions |
+| 6 | Could not read temperature |
+| 7 | Could not write to file |
+| 8 | Could not write fan speed |
+| 9 | Could not read fan speed |
+| 10 | Could not find user config directory |
+| 11 | Could not read configuration file |
+| 12 | Could not parse configuration file |
+
+## ToDos & Planned Features
+
+- The Configuration should be editable in the GUI
+- A graphic representation (chart) of the fan curve
+- Minimize to systray (this is supported by fyne, but does not work on my system)
+- Autostart feature (maybe this should just be part of the documentation)
