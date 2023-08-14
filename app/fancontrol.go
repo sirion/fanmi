@@ -107,17 +107,65 @@ func calculateStep(temp float32, lowEntry, highEntry config.Entry) float32 {
 	return relSpeed
 }
 
-func fanControl(ui ui.UI, dirPath string, config *config.Configuration) chan bool {
-	pwmPath := path.Join(dirPath, "pwm1")
-	fanModePath := path.Join(dirPath, "pwm1_enable")
-	tempInputPath := path.Join(dirPath, "temp1_input")
+func writePowerMode(powerModePath, mode string) error {
+	file, err := os.OpenFile(powerModePath, os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("Error writing to %s: %s\n", powerModePath, err.Error())
+	}
+
+	_, err = file.Write([]byte(mode))
+	if err != nil {
+		return fmt.Errorf("Error writing to %s: %s\n", powerModePath, err.Error())
+	}
+
+	// fmt.Printf("Written %s to %s\n", mode, powerModePath)
+	return nil
+}
+
+func readPowerMode(powerModePath string) (string, error) {
+	data, err := os.ReadFile(powerModePath)
+	if err != nil {
+		return "", fmt.Errorf("Error reading temperature from %s: %s\n", powerModePath, err.Error())
+	}
+
+	return strings.TrimSpace(string(data)), nil
+}
+
+func fanControl(ui ui.UI, deviceDirPath, hwmonDirPath string, config *config.Configuration) chan bool {
+	powerModePath := path.Join(deviceDirPath, "power_dpm_force_performance_level")
+	pwmPath := path.Join(hwmonDirPath, "pwm1")
+	fanModePath := path.Join(hwmonDirPath, "pwm1_enable")
+	tempInputPath := path.Join(hwmonDirPath, "temp1_input")
 
 	done := make(chan bool)
 
 	go (func() {
 		var lastTemp float32 = -500
+		powerModeAvailable := true
 
 		for config.Running {
+			// Power Mode
+			if powerModeAvailable {
+				var err error
+
+				if config.ModeChanged && config.Mode != "" {
+					err = writePowerMode(powerModePath, config.Mode)
+					config.ModeChanged = false
+					if err != nil {
+						ui.Message(err.Error())
+					}
+				}
+				config.Mode, err = readPowerMode(powerModePath)
+				if err != nil {
+					if powerModeAvailable {
+						fmt.Fprintf(os.Stderr, "Cannot read power mode: %s", err.Error())
+					}
+					powerModeAvailable = false
+					config.Mode = ""
+				}
+			}
+			ui.PowerMode(config.Mode)
+
 			temp := readTemp(ui, tempInputPath)
 			ui.Temperature(temp)
 			if !config.Active {

@@ -10,6 +10,7 @@ type UI interface {
 	Fatal(exitCode int, message string)
 	Temperature(temp float32)
 	Speed(speed float32)
+	PowerMode(mode string)
 }
 
 func CreateUI(uiType string) UI {

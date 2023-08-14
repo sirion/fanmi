@@ -1,4 +1,8 @@
-# fanmi - Linux AMD GPU Fan Control
+# fanmi - Linux AMDGPU Fan Control
+
+A small utility that supports defining your own fan-curve and changing the power-profile.
+
+## Why?
 
 Inpired by [amdgpu-fancontrol](https://github.com/grmat/amdgpu-fancontrol), but I wanted a UI.
 
@@ -13,22 +17,23 @@ Also, I wanted to learn a new GUI-Framework with a simple project, that's why th
 |-|-|
 | ![GUI Interface](doc/main_window01.png) | ![](doc/main_console01.png) <hr>![](doc/main_console02.png) |
 
+All relevant information about the used files comes from [AMDGPU Documentation](https://docs.kernel.org/6.1/gpu/amdgpu/thermal.html).
 
 ## Getting started
 
-- Download the latest release binary or compile it yourself.
+- Download the latest release binary or compile it yourself (see [util/build.sh](util/build.sh)).
 - (optional) Make the binary launch as root without sudo (`sudo chown root:root ./fanmi && sudo chmod u+s ./fanmi`)
 
 ## CLI Use
 
 You can have three UI-options:
 
-1. `--ui graphic` - GUI - (Default) Shows a window with temperature, fan-speed and option to switch on/off
-2. `--ui console` - Console - Prints out temperature and fan-speed on the console - press space to switch on/off
+1. `--ui graphic` - GUI - (Default) Shows a window with temperature, fan-speed and option to switch on/off and a power profile dropdown
+2. `--ui console` - Console - Prints out temperature and fan-speed on the console - press space to switch on/off, 'a', 'l', 'h' to switch power profile and ctrl-c to exit
 3. `--ui none` - No output
 
 If you want to change the fan-curve, you can create a configuration file in JSON.
-Either provide the path to the file as CLI-argument (`--config "path/to/config.json"`), or put it at the default location, which you can find by invoking fanmi with `--help`.
+Either provide the path to the file as CLI-argument (`--config "path/to/config.json"`), or put it at the default location, which you can find by invoking fanmi with `--help`. (Should be `/home/[USERNAME]/.config/fanmi/config.json` on most systems.)
 
 The default configuration would look like this:
 
@@ -36,6 +41,7 @@ The default configuration would look like this:
 {
     "checkIntervalMs": 3000,
     "minChange": 2,
+    "powerMode": "",
     "values": [
         {
             "Temp": 40,

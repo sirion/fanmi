@@ -10,13 +10,15 @@ import (
 )
 
 type Configuration struct {
-	Running bool   `json:"-"`
-	Active  bool   `json:"-"`
-	UI      string `json:"-"`
-
+	Mode            string  `json:"powerMode"`
 	CheckIntervalMs uint    `json:"checkIntervalMs"`
 	MinChange       float32 `json:"minChange"`
 	Values          Values  `json:"values"`
+
+	ModeChanged bool   `json:"-"`
+	Running     bool   `json:"-"`
+	Active      bool   `json:"-"`
+	UI          string `json:"-"`
 }
 
 func ReadConfig() *Configuration {
@@ -102,4 +104,10 @@ func showHelp() {
 	fmt.Println(string(defaultConfigJSON))
 	fmt.Println(``)
 	os.Exit(0)
+}
+
+func (c *Configuration) SetPowerMode(mode string) {
+	c.ModeChanged = mode != c.Mode
+	c.Mode = mode
+	// fmt.Printf("Power mode changed to %s (%t)\n", c.Mode, c.ModeChanged)
 }

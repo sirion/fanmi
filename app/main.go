@@ -59,16 +59,17 @@ func main() {
 	workers := make([]chan bool, 0)
 	for _, matchPath := range pwmMatches {
 		// Task: Start Monitor Routine per card
-		dirPath := path.Dir("/sys/class/drm/" + matchPath)
+		hwmonDirPath := path.Dir("/sys/class/drm/" + matchPath)
+		deviceDirPath := path.Dir(path.Dir(hwmonDirPath))
 
-		pwmPath := path.Join(dirPath, "pwm1")
-		enablePath := path.Join(dirPath, "pwm1_enable")
-		tempInputPath := path.Join(dirPath, "temp1_input")
+		pwmPath := path.Join(hwmonDirPath, "pwm1")
+		enablePath := path.Join(hwmonDirPath, "pwm1_enable")
+		tempInputPath := path.Join(hwmonDirPath, "temp1_input")
 		if !fileExists(pwmPath) || !fileExists(enablePath) || !fileExists(tempInputPath) {
 			continue
 		}
 
-		workers = append(workers, fanControl(ui, dirPath, conf))
+		workers = append(workers, fanControl(ui, deviceDirPath, hwmonDirPath, conf))
 	}
 
 	// Task: Check Compatibility

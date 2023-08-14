@@ -11,18 +11,11 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"fyne.io/systray"
 	"github.com/sirion/fanmi/app/config"
 )
 
-type FyneUI struct {
-	done   chan bool
-	config *config.Configuration
-
-	app   fyne.App
-	win   fyne.Window
-	temp  *canvas.Text
-	speed *canvas.Text
-}
+/// Helper Functions
 
 func NewBigText(text string) *canvas.Text {
 	app := fyne.CurrentApp()
@@ -33,6 +26,20 @@ func NewBigText(text string) *canvas.Text {
 	cTxt.TextSize = theme.TextSize() * 2
 
 	return cTxt
+}
+
+/// FyneUI
+
+type FyneUI struct {
+	done   chan bool
+	config *config.Configuration
+
+	app       fyne.App
+	win       fyne.Window
+	temp      *canvas.Text
+	speed     *canvas.Text
+	mode      *widget.Select
+	modeLabel *canvas.Text
 }
 
 func (ui *FyneUI) Init(config *config.Configuration) chan bool {
@@ -67,6 +74,22 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 		ui.speed.Refresh()
 	})
 	chkActive.SetChecked(ui.config.Active)
+
+	ui.modeLabel = canvas.NewText("Power:", theme.ForegroundColor())
+	ui.mode = widget.NewSelect([]string{
+		"auto",
+		"low",
+		"high",
+		// "manual",
+		// "profile_standard",
+		// "profile_min_sclk",
+		// "profile_min_mclk",
+		// "profile_peak",
+	}, func(mode string) {
+		ui.config.SetPowerMode(mode)
+	})
+	ui.mode.Selected = "auto"
+
 	ui.win.SetContent(container.NewVBox(
 		container.NewHBox(
 			container.NewVBox(
@@ -89,6 +112,8 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 		container.NewHBox(
 			chkActive,
 			layout.NewSpacer(),
+			ui.modeLabel,
+			ui.mode,
 		),
 	))
 
@@ -124,6 +149,17 @@ func (ui *FyneUI) Speed(speed float32) {
 	ui.speed.Text = fmt.Sprintf("%2.1f", speed*100)
 	ui.speed.Refresh()
 	// ui.speed.SetText(fmt.Sprintf("%2.1f%%", speed*100))
+}
+
+func (ui *FyneUI) PowerMode(mode string) {
+	if mode == "" {
+		// Power mode not supported
+		ui.mode.Hidden = true
+		ui.modeLabel.Hidden = true
+	} else {
+		ui.mode.Selected = mode
+	}
+	ui.mode.Refresh()
 }
 
 func (*FyneUI) Message(message string) {

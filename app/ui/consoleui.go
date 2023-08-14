@@ -43,6 +43,12 @@ func (ui *ConsoleUI) Init(config *config.Configuration) chan bool {
 				// Space toggles active/inactive
 				ui.config.Active = !ui.config.Active
 				ui.update()
+			} else if bt[0] == 'a' {
+				config.SetPowerMode("auto")
+			} else if bt[0] == 'l' {
+				config.SetPowerMode("low")
+			} else if bt[0] == 'h' {
+				config.SetPowerMode("high")
 			} else if bt[0] == 3 {
 				// Ctrl-C
 				ui.Message("Ctrl-C caught. Exiting.\n")
@@ -50,6 +56,7 @@ func (ui *ConsoleUI) Init(config *config.Configuration) chan bool {
 				ui.config.Active = false
 				ui.Exit()
 			}
+			ui.update()
 		}
 	})()
 
@@ -72,26 +79,35 @@ func (*ConsoleUI) Fatal(exitCode int, message string) {
 	os.Exit(exitCode)
 }
 
-func (c *ConsoleUI) Temperature(temp float32) {
-	c.temp = temp
-	c.update()
+func (ui *ConsoleUI) Temperature(temp float32) {
+	ui.temp = temp
+	ui.update()
 }
 
-func (c *ConsoleUI) Speed(speed float32) {
-	c.speed = speed
-	c.update()
+func (ui *ConsoleUI) Speed(speed float32) {
+	ui.speed = speed
+	ui.update()
+}
+
+func (*ConsoleUI) PowerMode(mode string) {
+	// Ignored for now
 }
 
 func (*ConsoleUI) Message(message string) {
-	fmt.Printf("                                                       \r\n")
+	fmt.Printf("\x1b[0K\r\n")
 	fmt.Print(message)
 }
 
-func (c *ConsoleUI) update() {
-	speedPercent := float32(int(c.speed*10000)) / 100
+func (ui *ConsoleUI) update() {
+	speedPercent := float32(int(ui.speed*10000)) / 100
 	prefix := ""
-	if !c.config.Active {
+	if !ui.config.Active {
 		prefix = "[INACTIVE] "
 	}
-	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%\r", prefix, c.temp, speedPercent)
+	powerMode := ""
+	if ui.config.Mode != "" {
+		powerMode = fmt.Sprintf("\t(Profile: %s)", ui.config.Mode)
+	}
+
+	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s\r", prefix, ui.temp, speedPercent, powerMode)
 }

@@ -30,6 +30,7 @@ func (*NoUI) Fatal(exitCode int, message string) {
 	fmt.Fprint(os.Stderr, message)
 	os.Exit(exitCode)
 }
-func (*NoUI) Temperature(float32) {}
-func (*NoUI) Speed(float32)       {}
-func (*NoUI) Message(string)      {}
+func (*NoUI) Temperature(float32)   {}
+func (*NoUI) Speed(float32)         {}
+func (*NoUI) Message(string)        {}
+func (*NoUI) PowerMode(mode string) {}

@@ -20,6 +20,7 @@ var defaultConfig = Configuration{
 	Active:          true,
 	UI:              "graphic",
 	CheckIntervalMs: 3000,
+	Mode:            "",
 	MinChange:       2,
 	Values: Values{
 		{40, 0},
