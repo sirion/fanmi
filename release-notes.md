@@ -4,11 +4,11 @@ Changelog of the past releases
 
 ## v0.2 (2023-08-14)
 
-Power mode support
+Power profile support
 
 ### Features
 
-- Power profile dropdown in GUI (auto, low, high)
+- Power profile drop-down in GUI (auto, low, high)
 - Power profile via keypress ('a', 'l', 'h') in console UI
 - Startup power profile setting in configuration file
 

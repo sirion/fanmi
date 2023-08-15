@@ -21,7 +21,7 @@ All relevant information about the used files comes from [AMDGPU Documentation](
 
 ## Getting started
 
-- Download the latest release binary or compile it yourself (see [util/build.sh](util/build.sh)).
+- Download the latest release binary or compile it yourself (see [build fanmi section](#build-fanmi)).
 - (optional) Make the binary launch as root without sudo (`sudo chown root:root ./fanmi && sudo chmod u+s ./fanmi`)
 
 ## CLI Use
@@ -85,6 +85,16 @@ In addition to printing the error message to stderr, the application exits with 
 | 10 | Could not find user config directory |
 | 11 | Could not read configuration file |
 | 12 | Could not parse configuration file |
+
+## Build fanmi
+
+There are three ways to build fanmi:
+
+1. The normal way: `go build -o bin/fanmi app/*.go`
+1. Build and make the executable file SUID root: `util/build.sh`
+1. Build, compress and make the executable file SUID root: `util/build.sh release`
+
+See [util/build.sh](util/build.sh) for the steps.
 
 ## ToDos & Planned Features
 
