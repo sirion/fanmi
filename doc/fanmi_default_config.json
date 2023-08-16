@@ -1,0 +1,29 @@
+{
+    "checkIntervalMs": 3000,
+    "minChange": 2,
+    "powerMode": "",
+    "curves": {
+        "default": [
+            {
+                "Temp": 40,
+                "Speed": 0
+            },
+            {
+                "Temp": 60,
+                "Speed": 0.2
+            },
+            {
+                "Temp": 80,
+                "Speed": 0.5
+            },
+            {
+                "Temp": 85,
+                "Speed": 0.7
+            },
+            {
+                "Temp": 90,
+                "Speed": 1
+            }
+        ]
+    }
+}

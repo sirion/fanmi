@@ -1,0 +1,52 @@
+{
+    "checkIntervalMs": 3000,
+    "minChange": 2,
+    "powerMode": "",
+    "curve": "default",
+    "curves": {
+        "default": [
+            {
+                "Temp": 40,
+                "Speed": 0
+            },
+            {
+                "Temp": 60,
+                "Speed": 0.2
+            },
+            {
+                "Temp": 80,
+                "Speed": 0.5
+            },
+            {
+                "Temp": 85,
+                "Speed": 0.7
+            },
+            {
+                "Temp": 90,
+                "Speed": 1
+            }
+        ],
+        "loud": [
+            {
+                "Temp": 30,
+                "Speed": 0
+            },
+            {
+                "Temp": 50,
+                "Speed": 0.5
+            },
+            {
+                "Temp": 55,
+                "Speed": 0.7
+            },
+            {
+                "Temp": 60,
+                "Speed": 0.9
+            },
+            {
+                "Temp": 70,
+                "Speed": 1
+            }
+        ]
+    }
+}

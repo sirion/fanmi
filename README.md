@@ -35,37 +35,21 @@ You can have three UI-options:
 If you want to change the fan-curve, you can create a configuration file in JSON.
 Either provide the path to the file as CLI-argument (`--config "path/to/config.json"`), or put it at the default location, which you can find by invoking fanmi with `--help`. (Should be `/home/[USERNAME]/.config/fanmi/config.json` on most systems.)
 
-The default configuration would look like this:
+The default fan curve looks like:
 
-```json
-{
-    "checkIntervalMs": 3000,
-    "minChange": 2,
-    "powerMode": "",
-    "values": [
-        {
-            "Temp": 40,
-            "Speed": 0
-        },
-        {
-            "Temp": 60,
-            "Speed": 0.2
-        },
-        {
-            "Temp": 80,
-            "Speed": 0.5
-        },
-        {
-            "Temp": 85,
-            "Speed": 0.7
-        },
-        {
-            "Temp": 90,
-            "Speed": 1
-        }
-    ]
-}
-```
+| Temp | Speed |
+|   -: |    -: |
+|  40° |    0% |
+|  60° |   20% |
+|  80° |   50% |
+|  85° |   70% |
+|  90° |  100% |
+
+Here are some configuration file examples:
+
+- [Default configuration](doc/fanmi_default_config.json)
+- [Start with low power](doc/fanmi_low_config.json)
+- [Multiple curves](doc/fanmi_multicurve_config.json)
 
 ### Exit codes
 
@@ -85,6 +69,7 @@ In addition to printing the error message to stderr, the application exits with 
 | 10 | Could not find user config directory |
 | 11 | Could not read configuration file |
 | 12 | Could not parse configuration file |
+| 13 | No fan curves found |
 
 ## Build fanmi
 
@@ -96,9 +81,16 @@ There are three ways to build fanmi:
 
 See [util/build.sh](util/build.sh) for the steps.
 
-## ToDos & Planned Features
+## Future
+
+### Known Bugs
+
+- The app sometimes hangs after pressing ctrl-c when using the GUI
+
+### ToDos & Planned Features
 
 - The Configuration should be editable in the GUI
 - A graphic representation (chart) of the fan curve
 - Minimize to systray (this is supported by fyne, but does not work on my system)
 - Autostart feature (maybe this should just be part of the documentation)
+ 

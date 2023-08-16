@@ -13,6 +13,7 @@ const (
 	ExitCodeUserConfigDir        = 10
 	ExitCodeUserConfigFile       = 11
 	ExitCodeUserParseConfig      = 12
+	ExitCodeNoCurves             = 13
 )
 
 var defaultConfig = Configuration{
@@ -22,11 +23,14 @@ var defaultConfig = Configuration{
 	CheckIntervalMs: 3000,
 	Mode:            "",
 	MinChange:       2,
-	Values: Values{
-		{40, 0},
-		{60, 0.2},
-		{80, 0.5},
-		{85, 0.7},
-		{90, 1},
+	StartingCurve:   "",
+	Curves: map[string]Values{
+		"default": {
+			{40, 0},
+			{60, 0.2},
+			{80, 0.5},
+			{85, 0.7},
+			{90, 1},
+		},
 	},
 }

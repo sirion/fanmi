@@ -2,6 +2,15 @@
 
 Changelog of the past releases
 
+## v0.3 (2023-08-15)
+
+Multiple fan curves support
+
+### Features
+
+- Support for defining multiple curves in the configuration file
+- Switching between curves in the GUI
+
 ## v0.2 (2023-08-14)
 
 Power profile support

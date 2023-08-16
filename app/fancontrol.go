@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sirion/fanmi/app/config"
+	"github.com/sirion/fanmi/app/debug"
 	"github.com/sirion/fanmi/app/ui"
 )
 
@@ -44,6 +45,7 @@ func readTemp(ui ui.UI, filePath string) float32 {
 	}
 
 	fTemp := float32(temp) / 1000
+	debug.Log("Read temperature %f to %s\n", fTemp, filePath)
 	return fTemp
 }
 
@@ -60,6 +62,8 @@ func readSpeed(ui ui.UI, filePath string) float32 {
 	}
 
 	fSpeed := float32(temp) / 255
+	debug.Log("Read fan speed %f to %s\n", fSpeed, filePath)
+
 	return fSpeed
 }
 
@@ -93,6 +97,8 @@ func setSpeed(ui ui.UI, filePath string, factor float32) {
 		ui.Fatal(config.ExitCodeSpeedWrite, fmt.Sprintf("Error writing to %s: %s\n", filePath, err.Error()))
 	}
 
+	debug.Log("Wrote fan speed %f to %s\n", factor, filePath)
+
 	ui.Speed(factor)
 }
 
@@ -118,7 +124,7 @@ func writePowerMode(powerModePath, mode string) error {
 		return fmt.Errorf("Error writing to %s: %s\n", powerModePath, err.Error())
 	}
 
-	// fmt.Printf("Written %s to %s\n", mode, powerModePath)
+	debug.Log("Written %s to %s\n", mode, powerModePath)
 	return nil
 }
 
@@ -128,6 +134,7 @@ func readPowerMode(powerModePath string) (string, error) {
 		return "", fmt.Errorf("Error reading temperature from %s: %s\n", powerModePath, err.Error())
 	}
 
+	debug.Log("Read power mode: %s", data)
 	return strings.TrimSpace(string(data)), nil
 }
 
@@ -141,6 +148,7 @@ func fanControl(ui ui.UI, deviceDirPath, hwmonDirPath string, config *config.Con
 
 	go (func() {
 		var lastTemp float32 = -500
+		lastCurve := config.Curve
 		powerModeAvailable := true
 
 		for config.Running {
@@ -181,11 +189,15 @@ func fanControl(ui ui.UI, deviceDirPath, hwmonDirPath string, config *config.Con
 			}
 
 			deltaTemp := float64(lastTemp - temp)
+			if &config.Curve != &lastCurve {
+				lastTemp = config.MinChange + 1
+			}
+
 			if math.Abs(deltaTemp) > float64(config.MinChange) {
 				lastTemp = temp
 
-				min := config.Values[0]
-				max := config.Values[len(config.Values)-1]
+				min := config.Curve[0]
+				max := config.Curve[len(config.Curve)-1]
 
 				writeFile(ui, fanModePath, FANMODE_MANUAL)
 
@@ -196,9 +208,9 @@ func fanControl(ui ui.UI, deviceDirPath, hwmonDirPath string, config *config.Con
 				} else {
 					// between min and max
 					var factor float32
-					for i, en := range config.Values {
+					for i, en := range config.Curve {
 						if temp < en.Temp {
-							factor = calculateStep(temp, config.Values[i-1], en)
+							factor = calculateStep(temp, config.Curve[i-1], en)
 							break
 						}
 					}

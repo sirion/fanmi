@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -40,6 +41,7 @@ type FyneUI struct {
 	speed     *canvas.Text
 	mode      *widget.Select
 	modeLabel *canvas.Text
+	curve     *widget.Select
 }
 
 func (ui *FyneUI) Init(config *config.Configuration) chan bool {
@@ -90,8 +92,8 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 	})
 	ui.mode.Selected = "auto"
 
-	ui.win.SetContent(container.NewVBox(
-		container.NewHBox(
+
+	display := container.NewHBox(
 			container.NewVBox(
 				NewBigText("Temperature:"),
 				layout.NewSpacer(),
@@ -108,14 +110,43 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 				layout.NewSpacer(),
 				NewBigText("%"),
 			),
-		),
-		container.NewHBox(
+	)
+
+	ctrlActivePower := container.NewHBox(
 			chkActive,
 			layout.NewSpacer(),
 			ui.modeLabel,
 			ui.mode,
-		),
+		// btnCurve,
+	)
+
+	content := container.NewVBox(display)
+
+	if len(ui.config.Curves) > 1 {
+		curveNames := make([]string, 0, len(ui.config.Curves))
+		for key := range ui.config.Curves {
+			curveNames = append(curveNames, key)
+		}
+		sort.Slice(curveNames, func(a, b int) bool {
+			return curveNames[a] < curveNames[b]
+		})
+
+		ui.curve = widget.NewSelect(curveNames, func(curve string) {
+			ui.config.SetCurve(curve)
+			ui.curve.Selected = curve
+		})
+		ui.curve.Selected = ui.config.StartingCurve
+
+		content.Add(container.NewHBox(
+			canvas.NewText("Curve:", theme.ForegroundColor()),
+			layout.NewSpacer(),
+			ui.curve,
 	))
+	}
+
+	content.Add(ctrlActivePower)
+
+	ui.win.SetContent(content)
 
 	ui.win.Show()
 

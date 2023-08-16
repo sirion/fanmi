@@ -7,24 +7,27 @@ import (
 	"os"
 	"path"
 	"sort"
+
+	"github.com/sirion/fanmi/app/debug"
 )
 
 type Configuration struct {
-	Mode            string  `json:"powerMode"`
-	CheckIntervalMs uint    `json:"checkIntervalMs"`
-	MinChange       float32 `json:"minChange"`
-	Values          Values  `json:"values"`
+	Mode            string            `json:"powerMode"`
+	CheckIntervalMs uint              `json:"checkIntervalMs"`
+	MinChange       float32           `json:"minChange"`
+	Curves          map[string]Values `json:"curves"`
+	StartingCurve   string            `json:"curve"`
 
 	ModeChanged bool   `json:"-"`
 	Running     bool   `json:"-"`
 	Active      bool   `json:"-"`
 	UI          string `json:"-"`
+	Curve       Values `json:"-"`
 }
 
 func ReadConfig() *Configuration {
 	// Read CLI options
 	var ui string
-	var configPath string
 
 	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
@@ -32,10 +35,12 @@ func ReadConfig() *Configuration {
 		os.Exit(ExitCodeUserConfigDir)
 	}
 	configDir := path.Join(userConfigDir, "fanmi")
-	configPath = path.Join(configDir, "config.json")
+	defaultConfigPath := path.Join(configDir, "config.json")
+	configPath := ""
 
 	flag.StringVar(&ui, "ui", "graphic", `Which UI to use, either "graphic", "console" or "none"`)
-	flag.StringVar(&configPath, "config", configPath, `Path to the (optional) configuration file`)
+	flag.StringVar(&configPath, "config", defaultConfigPath, `Path to the (optional) configuration file`)
+	flag.BoolVar(&debug.DebugOutput, "v", debug.DebugOutput, `Print detailed debug log to stdout`)
 	help := flag.Bool("help", false, "Show this help")
 	flag.Parse()
 
@@ -46,23 +51,35 @@ func ReadConfig() *Configuration {
 
 	config := &defaultConfig
 
-	if len(configPath) > 0 {
-		// Load configuration
-		data, err := os.ReadFile(configPath)
+	configLoaded := false
+	var data []byte
+	if configPath != "" {
+		// Load user provided configuration
+		debug.Log("Loading configuration file %s\n", configPath)
+		data, err = os.ReadFile(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading config file: %s, trying default config path\n", err.Error())
+		} else {
+			configLoaded = true
+		}
+	}
+	if !configLoaded {
+		debug.Log("Loading default configuration file %s\n", defaultConfigPath)
+		data, err = os.ReadFile(defaultConfigPath)
 		noConfigFile := os.IsNotExist(err)
 		if err != nil && !noConfigFile {
-			fmt.Fprintf(os.Stderr, "Error reading config file: %s", err.Error())
-			os.Exit(ExitCodeUserConfigFile)
+			fmt.Fprintf(os.Stderr, "Error reading default config file %s: %s, fallback to defaults\n", configPath, err.Error())
+		} else if !noConfigFile {
+			configLoaded = true
 		}
+	}
 
-		if !noConfigFile {
-			// Parse configuration
-			config = &Configuration{}
-			err = json.Unmarshal(data, config)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error parsing config file: %s", err.Error())
-				os.Exit(ExitCodeUserParseConfig)
-			}
+	if configLoaded {
+		// Parse configuration
+		err = json.Unmarshal(data, config)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing config file: %s\n", err.Error())
+			os.Exit(ExitCodeUserParseConfig)
 		}
 	}
 
@@ -70,9 +87,31 @@ func ReadConfig() *Configuration {
 	config.Running = true
 	config.UI = ui
 
-	sort.Sort(config.Values)
+	for i := range config.Curves {
+		sort.Sort(config.Curves[i])
+	}
 
-	// TODO: Sort Values
+	if len(config.Curves) == 0 {
+		fmt.Fprint(os.Stderr, "No available fan curves")
+		os.Exit(ExitCodeNoCurves)
+	}
+
+	if config.StartingCurve == "" && len(config.Curves) == 1 {
+		for _, curve := range config.Curves {
+			config.Curve = curve
+			break
+		}
+	} else {
+		curve, ok := config.Curves[config.StartingCurve]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found", config.StartingCurve)
+			os.Exit(ExitCodeNoCurves)
+		}
+		config.Curve = curve
+	}
+
+	debug.LogJSON("Configuration:\n", config, "\n\n")
+
 	return config
 }
 
@@ -109,5 +148,22 @@ func showHelp() {
 func (c *Configuration) SetPowerMode(mode string) {
 	c.ModeChanged = mode != c.Mode
 	c.Mode = mode
-	// fmt.Printf("Power mode changed to %s (%t)\n", c.Mode, c.ModeChanged)
+	debug.Log("Power mode changed to %s (%t)\n", c.Mode, c.ModeChanged)
+}
+
+func (c *Configuration) SetCurve(curveName string) {
+	ok := false
+	c.Curve, ok = c.Curves[curveName]
+
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found\n", curveName)
+		for name, curve := range c.Curves {
+			fmt.Fprintf(os.Stderr, "Using fan curve '%s'\n", name)
+			c.Curve = curve
+			break
+		}
+	}
+
+	debug.Log("Curve changed to %s\n", curveName)
+	debug.LogJSON("Curve: ", c.Curve, "")
 }
