@@ -18,11 +18,12 @@ type Configuration struct {
 	Curves          map[string]Values `json:"curves"`
 	StartingCurve   string            `json:"curve"`
 
-	ModeChanged bool   `json:"-"`
-	Running     bool   `json:"-"`
-	Active      bool   `json:"-"`
-	UI          string `json:"-"`
-	Curve       Values `json:"-"`
+	ModeChanged bool     `json:"-"`
+	Running     bool     `json:"-"`
+	Active      bool     `json:"-"`
+	UI          string   `json:"-"`
+	CurveNames  []string `json:"-"`
+	Curve       Values   `json:"-"`
 }
 
 func ReadConfig() *Configuration {
@@ -50,70 +51,13 @@ func ReadConfig() *Configuration {
 	}
 
 	config := &defaultConfig
-
-	configLoaded := false
-	var data []byte
-	if configPath != "" {
-		// Load user provided configuration
-		debug.Log("Loading configuration file %s\n", configPath)
-		data, err = os.ReadFile(configPath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading config file: %s, trying default config path\n", err.Error())
-		} else {
-			configLoaded = true
-		}
-	}
-	if !configLoaded {
-		debug.Log("Loading default configuration file %s\n", defaultConfigPath)
-		data, err = os.ReadFile(defaultConfigPath)
-		noConfigFile := os.IsNotExist(err)
-		if err != nil && !noConfigFile {
-			fmt.Fprintf(os.Stderr, "Error reading default config file %s: %s, fallback to defaults\n", configPath, err.Error())
-		} else if !noConfigFile {
-			configLoaded = true
-		}
-	}
-
-	if configLoaded {
-		// Parse configuration
-		err = json.Unmarshal(data, config)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing config file: %s\n", err.Error())
-			os.Exit(ExitCodeUserParseConfig)
-		}
-	}
-
 	config.Active = true
 	config.Running = true
 	config.UI = ui
-
-	for i := range config.Curves {
-		sort.Sort(config.Curves[i])
-	}
-
-	if len(config.Curves) == 0 {
-		fmt.Fprint(os.Stderr, "No available fan curves")
-		os.Exit(ExitCodeNoCurves)
-	}
-
-	if config.StartingCurve == "" && len(config.Curves) == 1 {
-		for _, curve := range config.Curves {
-			config.Curve = curve
-			break
-		}
-	} else {
-		curve, ok := config.Curves[config.StartingCurve]
-		if !ok {
-			fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found", config.StartingCurve)
-			os.Exit(ExitCodeNoCurves)
-		}
-		config.Curve = curve
-	}
-
-	if config.Mode != "" {
-		// Make sure the configured mode is set before reading current mode
-		config.ModeChanged = true
-	}
+	config.loadFromFile(configPath, defaultConfigPath)
+	config.prepareCurves()
+	// Make sure the configured mode is set before reading current mode
+	config.ModeChanged = config.Mode != ""
 
 	debug.LogJSON("Configuration:\n", config, "\n\n")
 
@@ -173,4 +117,75 @@ func (c *Configuration) SetCurve(curveName string) {
 
 	debug.Log("Curve changed to %s\n", curveName)
 	debug.LogJSON("Curve: ", c.Curve, "")
+}
+
+func (config *Configuration) loadFromFile(configPath, defaultConfigPath string) {
+	configLoaded := false
+	var data []byte
+	var err error
+
+	if configPath != "" {
+		// Load user provided configuration
+		debug.Log("Loading configuration file %s\n", configPath)
+		data, err = os.ReadFile(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading config file: %s, trying default config path\n", err.Error())
+		} else {
+			configLoaded = true
+		}
+	}
+	if !configLoaded {
+		debug.Log("Loading default configuration file %s\n", defaultConfigPath)
+		data, err = os.ReadFile(defaultConfigPath)
+		noConfigFile := os.IsNotExist(err)
+		if err != nil && !noConfigFile {
+			fmt.Fprintf(os.Stderr, "Error reading default config file %s: %s, fallback to defaults\n", configPath, err.Error())
+		} else if !noConfigFile {
+			configLoaded = true
+		}
+	}
+
+	if configLoaded {
+		// Parse configuration
+		err = json.Unmarshal(data, config)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing config file: %s\n", err.Error())
+			os.Exit(ExitCodeUserParseConfig)
+		}
+	}
+}
+
+func (config *Configuration) prepareCurves() {
+	for i := range config.Curves {
+		sort.Sort(config.Curves[i])
+	}
+
+	if len(config.Curves) == 0 {
+		fmt.Fprint(os.Stderr, "No available fan curves")
+		os.Exit(ExitCodeNoCurves)
+	}
+
+	if config.StartingCurve == "" && len(config.Curves) == 1 {
+		for _, curve := range config.Curves {
+			config.Curve = curve
+			break
+		}
+	} else {
+		curve, ok := config.Curves[config.StartingCurve]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found", config.StartingCurve)
+			os.Exit(ExitCodeNoCurves)
+		}
+		config.Curve = curve
+	}
+
+	// Sorted list of available curveNames
+	config.CurveNames = make([]string, 0, len(config.Curves))
+	for key := range config.Curves {
+		config.CurveNames = append(config.CurveNames, key)
+	}
+	sort.Slice(config.CurveNames, func(a, b int) bool {
+		return config.CurveNames[a] < config.CurveNames[b]
+	})
+
 }

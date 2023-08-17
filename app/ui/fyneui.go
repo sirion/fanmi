@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"os"
-	"sort"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -123,15 +122,7 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 	content := container.NewVBox(display)
 
 	if len(ui.config.Curves) > 1 {
-		curveNames := make([]string, 0, len(ui.config.Curves))
-		for key := range ui.config.Curves {
-			curveNames = append(curveNames, key)
-		}
-		sort.Slice(curveNames, func(a, b int) bool {
-			return curveNames[a] < curveNames[b]
-		})
-
-		ui.curve = widget.NewSelect(curveNames, func(curve string) {
+		ui.curve = widget.NewSelect(config.CurveNames, func(curve string) {
 			ui.config.SetCurve(curve)
 			ui.curve.Selected = curve
 		})
