@@ -11,7 +11,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"fyne.io/systray"
 	"github.com/sirion/fanmi/app/config"
 )
 
@@ -91,31 +90,30 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 	})
 	ui.mode.Selected = "auto"
 
-
 	display := container.NewHBox(
-			container.NewVBox(
-				NewBigText("Temperature:"),
-				layout.NewSpacer(),
-				NewBigText("Fan Speed:"),
-			),
+		container.NewVBox(
+			NewBigText("Temperature:"),
 			layout.NewSpacer(),
-			container.NewVBox(
-				ui.temp,
-				layout.NewSpacer(),
-				ui.speed,
-			),
-			container.NewVBox(
-				NewBigText("°C"),
-				layout.NewSpacer(),
-				NewBigText("%"),
-			),
+			NewBigText("Fan Speed:"),
+		),
+		layout.NewSpacer(),
+		container.NewVBox(
+			ui.temp,
+			layout.NewSpacer(),
+			ui.speed,
+		),
+		container.NewVBox(
+			NewBigText("°C"),
+			layout.NewSpacer(),
+			NewBigText("%"),
+		),
 	)
 
 	ctrlActivePower := container.NewHBox(
-			chkActive,
-			layout.NewSpacer(),
-			ui.modeLabel,
-			ui.mode,
+		chkActive,
+		layout.NewSpacer(),
+		ui.modeLabel,
+		ui.mode,
 		// btnCurve,
 	)
 
@@ -126,13 +124,13 @@ func (ui *FyneUI) Init(config *config.Configuration) chan bool {
 			ui.config.SetCurve(curve)
 			ui.curve.Selected = curve
 		})
-		ui.curve.Selected = ui.config.StartingCurve
+		ui.curve.Selected = ui.config.CurrentCurve
 
 		content.Add(container.NewHBox(
 			canvas.NewText("Curve:", theme.ForegroundColor()),
 			layout.NewSpacer(),
 			ui.curve,
-	))
+		))
 	}
 
 	content.Add(ctrlActivePower)
@@ -164,13 +162,11 @@ func (*FyneUI) Fatal(exitCode int, message string) {
 func (ui *FyneUI) Temperature(temp float32) {
 	ui.temp.Text = fmt.Sprintf("%2.0f", temp)
 	ui.temp.Refresh()
-	// ui.temp.SetText(fmt.Sprintf("%2.0f°", temp))
 }
 
 func (ui *FyneUI) Speed(speed float32) {
 	ui.speed.Text = fmt.Sprintf("%2.1f", speed*100)
 	ui.speed.Refresh()
-	// ui.speed.SetText(fmt.Sprintf("%2.1f%%", speed*100))
 }
 
 func (ui *FyneUI) PowerMode(mode string) {

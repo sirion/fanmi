@@ -2,6 +2,17 @@
 
 Changelog of the past releases
 
+## v0.3.1 (2023-08-17)
+
+### Features
+
+- Switching through curves in console UI (key 'c')
+- Quit application in console UI (key 'q')
+
+### Fixes
+
+- Power profile in configuration file was ignored
+
 ## v0.3 (2023-08-15)
 
 Multiple fan curves support

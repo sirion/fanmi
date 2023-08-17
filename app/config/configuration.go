@@ -16,7 +16,7 @@ type Configuration struct {
 	CheckIntervalMs uint              `json:"checkIntervalMs"`
 	MinChange       float32           `json:"minChange"`
 	Curves          map[string]Values `json:"curves"`
-	StartingCurve   string            `json:"curve"`
+	CurrentCurve    string            `json:"curve"`
 
 	ModeChanged bool     `json:"-"`
 	Running     bool     `json:"-"`
@@ -110,13 +110,34 @@ func (c *Configuration) SetCurve(curveName string) {
 		fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found\n", curveName)
 		for name, curve := range c.Curves {
 			fmt.Fprintf(os.Stderr, "Using fan curve '%s'\n", name)
+			c.CurrentCurve = name
 			c.Curve = curve
 			break
 		}
+	} else {
+		c.CurrentCurve = curveName
 	}
 
 	debug.Log("Curve changed to %s\n", curveName)
 	debug.LogJSON("Curve: ", c.Curve, "")
+}
+
+func (c *Configuration) NextCurve() {
+	i := -1
+	name := ""
+	for i, name = range c.CurveNames {
+		if name == c.CurrentCurve {
+			break
+		}
+	}
+
+	if i == len(c.CurveNames)-1 {
+		i = 0
+	} else {
+		i = i + 1
+	}
+
+	c.SetCurve(c.CurveNames[i])
 }
 
 func (config *Configuration) loadFromFile(configPath, defaultConfigPath string) {
@@ -165,15 +186,15 @@ func (config *Configuration) prepareCurves() {
 		os.Exit(ExitCodeNoCurves)
 	}
 
-	if config.StartingCurve == "" && len(config.Curves) == 1 {
+	if config.CurrentCurve == "" && len(config.Curves) == 1 {
 		for _, curve := range config.Curves {
 			config.Curve = curve
 			break
 		}
 	} else {
-		curve, ok := config.Curves[config.StartingCurve]
+		curve, ok := config.Curves[config.CurrentCurve]
 		if !ok {
-			fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found", config.StartingCurve)
+			fmt.Fprintf(os.Stderr, "Selected fan curve '%s' not found", config.CurrentCurve)
 			os.Exit(ExitCodeNoCurves)
 		}
 		config.Curve = curve

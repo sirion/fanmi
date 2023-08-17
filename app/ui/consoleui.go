@@ -16,8 +16,8 @@ type ConsoleUI struct {
 	config  *config.Configuration
 }
 
-func (ui *ConsoleUI) Init(config *config.Configuration) chan bool {
-	ui.config = config
+func (ui *ConsoleUI) Init(conf *config.Configuration) chan bool {
+	ui.config = conf
 	ui.done = make(chan bool, 2)
 	ui.running = make(chan bool, 2)
 
@@ -31,27 +31,36 @@ func (ui *ConsoleUI) Init(config *config.Configuration) chan bool {
 		defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 		bt := make([]byte, 1)
-		for config.Running {
+		for ui.config.Running {
 			n, err := os.Stdin.Read(bt)
 			if err != nil {
-				ui.Message(fmt.Sprintf("Error reading from console: %s\n", err.Error()))
+				ui.Message(fmt.Sprintf("Error reading from standard input: %s\n", err.Error()))
+				os.Exit(config.ExitCodeReadStdIn)
 			}
 			if n == 0 {
 				ui.Message("End of input from console.\n")
-				return
+				os.Exit(config.ExitCodeReadStdIn)
+
 			} else if bt[0] == ' ' {
 				// Space toggles active/inactive
 				ui.config.Active = !ui.config.Active
 				ui.update()
 			} else if bt[0] == 'a' {
-				config.SetPowerMode("auto")
+				ui.config.SetPowerMode("auto")
 			} else if bt[0] == 'l' {
-				config.SetPowerMode("low")
+				ui.config.SetPowerMode("low")
 			} else if bt[0] == 'h' {
-				config.SetPowerMode("high")
+				ui.config.SetPowerMode("high")
+			} else if bt[0] == 'c' {
+				ui.config.NextCurve()
+			} else if bt[0] == 'q' {
+				ui.Message("Exiting\n")
+				ui.config.Running = false
+				ui.config.Active = false
+				ui.Exit()
 			} else if bt[0] == 3 {
 				// Ctrl-C
-				ui.Message("Ctrl-C caught. Exiting.\n")
+				ui.Message("Ctrl-c caught - Exiting\n")
 				ui.config.Running = false
 				ui.config.Active = false
 				ui.Exit()
@@ -108,6 +117,10 @@ func (ui *ConsoleUI) update() {
 	if ui.config.Mode != "" {
 		powerMode = fmt.Sprintf("\t(Profile: %s)", ui.config.Mode)
 	}
+	curve := ""
+	if len(ui.config.Curves) > 1 {
+		curve = fmt.Sprintf("\t(Curve: %s)", ui.config.CurrentCurve)
+	}
 
-	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s\r", prefix, ui.temp, speedPercent, powerMode)
+	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s%s\r", prefix, ui.temp, speedPercent, powerMode, curve)
 }

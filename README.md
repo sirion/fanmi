@@ -29,7 +29,7 @@ All relevant information about the used files comes from [AMDGPU Documentation](
 You can have three UI-options:
 
 1. `--ui graphic` - GUI - (Default) Shows a window with temperature, fan-speed and option to switch on/off and a power profile dropdown
-2. `--ui console` - Console - Prints out temperature and fan-speed on the console - press space to switch on/off, 'a', 'l', 'h' to switch power profile and ctrl-c to exit
+2. `--ui console` - Console - Prints out temperature and fan-speed on the console - press space to switch on/off, 'a', 'l', 'h' to switch power profile, 'c' to change the curve and 'q' or ctrl-c to exit
 3. `--ui none` - No output
 
 If you want to change the fan-curve, you can create a configuration file in JSON.
