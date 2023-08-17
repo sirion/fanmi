@@ -40,12 +40,12 @@ func ReadConfig() *Configuration {
 
 	flag.StringVar(&ui, "ui", "graphic", `Which UI to use, either "graphic", "console" or "none"`)
 	flag.StringVar(&configPath, "config", defaultConfigPath, `Path to the (optional) configuration file`)
-	flag.BoolVar(&debug.DebugOutput, "v", debug.DebugOutput, `Print detailed debug log to stdout`)
-	help := flag.Bool("help", false, "Show this help")
+	flag.BoolVar(&debug.DebugOutput, "v", debug.DebugOutput, `Print debug information to stdout`)
+	help := flag.Bool("help", false, "Show this help (add -v for more information)")
 	flag.Parse()
 
 	if *help {
-		showHelp()
+		showHelp(debug.DebugOutput)
 		os.Exit(0)
 	}
 
@@ -110,38 +110,45 @@ func ReadConfig() *Configuration {
 		config.Curve = curve
 	}
 
+	if config.Mode != "" {
+		// Make sure the configured mode is set before reading current mode
+		config.ModeChanged = true
+	}
+
 	debug.LogJSON("Configuration:\n", config, "\n\n")
 
 	return config
 }
 
-func showHelp() {
+func showHelp(verbose bool) {
 	defaultConfigJSON, _ := json.MarshalIndent(defaultConfig, "", "\t")
 
 	fmt.Println(`CLI Options:`)
 	flag.PrintDefaults()
 
-	fmt.Println(``)
-	fmt.Println(`Exit Codes:`)
-	fmt.Printf("+-----+-----------------------------------------------+\n")
-	fmt.Printf("| %3d | Could not open device                         |\n", ExitCodeOpenDevice)
-	fmt.Printf("| %3d | Could not find decive                         |\n", ExitCodeFindDevice)
-	fmt.Printf("| %3d | Could not find at least one compatible device |\n", ExitCodeFindCompatibleDevice)
-	fmt.Printf("| %3d | Could not determine current user              |\n", ExitCodeGetUser)
-	fmt.Printf("| %3d | You do not have (effective) root permissions  |\n", ExitCodeRoot)
-	fmt.Printf("| %3d | Could not read temperature                    |\n", ExitCodeReadTemperature)
-	fmt.Printf("| %3d | Could not write to file                       |\n", ExitCodeWriteFile)
-	fmt.Printf("| %3d | Could not write fan speed                     |\n", ExitCodeSpeedWrite)
-	fmt.Printf("| %3d | Could not read fan speed                      |\n", ExitCodeReadSpeed)
-	fmt.Printf("| %3d | Could not find user config directory          |\n", ExitCodeUserConfigDir)
-	fmt.Printf("| %3d | Could not read configuration file             |\n", ExitCodeUserConfigFile)
-	fmt.Printf("| %3d | Could not parse configuration file            |\n", ExitCodeUserParseConfig)
-	fmt.Printf("+-----+-----------------------------------------------+\n")
+	if verbose {
+		fmt.Println(``)
+		fmt.Println(`Exit Codes:`)
+		fmt.Printf("+-----+-----------------------------------------------+\n")
+		fmt.Printf("| %3d | Could not open device                         |\n", ExitCodeOpenDevice)
+		fmt.Printf("| %3d | Could not find decive                         |\n", ExitCodeFindDevice)
+		fmt.Printf("| %3d | Could not find at least one compatible device |\n", ExitCodeFindCompatibleDevice)
+		fmt.Printf("| %3d | Could not determine current user              |\n", ExitCodeGetUser)
+		fmt.Printf("| %3d | You do not have (effective) root permissions  |\n", ExitCodeRoot)
+		fmt.Printf("| %3d | Could not read temperature                    |\n", ExitCodeReadTemperature)
+		fmt.Printf("| %3d | Could not write to file                       |\n", ExitCodeWriteFile)
+		fmt.Printf("| %3d | Could not write fan speed                     |\n", ExitCodeSpeedWrite)
+		fmt.Printf("| %3d | Could not read fan speed                      |\n", ExitCodeReadSpeed)
+		fmt.Printf("| %3d | Could not find user config directory          |\n", ExitCodeUserConfigDir)
+		fmt.Printf("| %3d | Could not read configuration file             |\n", ExitCodeUserConfigFile)
+		fmt.Printf("| %3d | Could not parse configuration file            |\n", ExitCodeUserParseConfig)
+		fmt.Printf("+-----+-----------------------------------------------+\n")
 
-	fmt.Println(``)
-	fmt.Println(`Default configuration:`)
-	fmt.Println(string(defaultConfigJSON))
-	fmt.Println(``)
+		fmt.Println(``)
+		fmt.Println(`Default configuration:`)
+		fmt.Println(string(defaultConfigJSON))
+		fmt.Println(``)
+	}
 	os.Exit(0)
 }
 
