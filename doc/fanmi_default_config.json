@@ -1,7 +1,6 @@
 {
     "checkIntervalMs": 3000,
     "minChange": 2,
-    "mode": "curve",
     "powerMode": "",
     "curves": {
         "default": [
