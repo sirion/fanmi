@@ -102,13 +102,7 @@ func (f *FanControl) Run() chan bool {
 				deltaTemp = f.config.MinChange + 1
 			}
 			if math.Abs(float64(deltaTemp)) > float64(f.config.MinChange) {
-				// switch f.config.Mode {
-				// case configuration.ModeCurve:
-				// 	fallthrough
-				// default:
 				f.byCurve(temp, f.ui, f.pwmPath, f.fanModePath, f.config)
-				// }
-
 				lastTemp = temp
 			}
 			time.Sleep(time.Duration(f.config.CheckIntervalMs) * time.Millisecond)

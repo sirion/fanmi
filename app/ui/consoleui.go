@@ -54,32 +54,6 @@ func (ui *ConsoleUI) Init(conf *configuration.Configuration) chan bool {
 				ui.config.SetPowerMode("high")
 			} else if bt[0] == 'c' {
 				ui.config.NextCurve()
-				// } else if bt[0] == 't' {
-				// 	// Switch between target and Curve mode
-				// 	if ui.config.Mode == configuration.ModeCurve {
-				// 		ui.config.Mode = configuration.ModeTemp
-				// 	} else if len(ui.config.Curves) > 0 {
-				// 		ui.config.Mode = configuration.ModeCurve
-				// 		ui.config.SetCurve(ui.config.CurveNames[0])
-				// 	}
-				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x41 {
-				// 	// Up
-				// 	ui.config.TargetTemperature += 1
-
-				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x42 {
-				// 	// Down
-				// 	ui.config.TargetTemperature -= 1
-
-				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x43 {
-				// 	// Left
-				// 	ui.config.MaximumTemperatureDelta += 1
-
-				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x44 {
-				// 	// Left
-				// 	if ui.config.MaximumTemperatureDelta >= 2 {
-				// 		ui.config.MaximumTemperatureDelta -= 1
-				// 	}
-
 			} else if bt[0] == 'q' {
 				ui.Message("Exiting\n")
 				ui.config.Running = false
@@ -146,13 +120,9 @@ func (ui *ConsoleUI) update() {
 	}
 
 	mode := ""
-	// if ui.config.Mode == configuration.ModeCurve {
 	if len(ui.config.Curves) > 1 {
 		mode = fmt.Sprintf("\t(Curve: %s)", ui.config.CurrentCurve)
 	}
-	// } else {
-	// 	mode = fmt.Sprintf("\t(Target: %2.1f° (+%2.1f))", ui.config.TargetTemperature, ui.config.MaximumTemperatureDelta)
-	// }
 
 	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s%s\r", prefix, ui.temp, speedPercent, powerMode, mode)
 }

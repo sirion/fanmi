@@ -22,10 +22,9 @@ const (
 // )
 
 var defaultConfig = Configuration{
-	Running: true,
-	Active:  true,
-	UI:      "graphic",
-	//	Mode:            "curve",
+	Running:         true,
+	Active:          true,
+	UI:              "graphic",
 	CheckIntervalMs: 3000,
 	PowerMode:       "auto",
 	MinChange:       2.0,

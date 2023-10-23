@@ -110,12 +110,6 @@ func (ui *FyneUI) Init(config *configuration.Configuration) chan bool {
 func (ui *FyneUI) showSettingsWindow() {
 	var curveText *canvas.Text
 	var curve *widget.Select
-	// var tempText *canvas.Text
-	// var tempInput *widget.Entry
-	// var tempMaxText *canvas.Text
-	// var tempMaxInput *widget.Entry
-	// var chkCurve *widget.Check
-	// var chkTemp *widget.Check
 
 	content := container.NewVBox()
 	form := container.New(layout.NewFormLayout())
@@ -188,66 +182,6 @@ func (ui *FyneUI) showSettingsWindow() {
 	form.Add(layout.NewSpacer())
 	form.Add(layout.NewSpacer())
 
-	// // Switch Mode
-	// fnSelectMode := func(selected string) {
-	// 	if selected == "Curve" {
-	// 		chkTemp.Checked = !chkCurve.Checked
-	// 	} else {
-	// 		chkCurve.Checked = !chkTemp.Checked
-	// 	}
-
-	// 	if chkCurve.Checked {
-	// 		ui.config.Mode = configuration.ModeCurve
-
-	// 		curveText.Show()
-	// 		curve.Show()
-	// 		tempText.Hide()
-	// 		tempInput.Hide()
-	// 		tempMaxText.Hide()
-	// 		tempMaxInput.Hide()
-	// 	} else {
-	// 		ui.config.Mode = configuration.ModeTemp
-
-	// 		curveText.Hide()
-	// 		curve.Hide()
-	// 		tempText.Show()
-	// 		tempInput.Show()
-	// 		tempMaxText.Show()
-	// 		tempMaxInput.Show()
-	// 	}
-
-	// 	chkCurve.Refresh()
-	// 	chkTemp.Refresh()
-
-	// 	debug.Log("Mode: %v", selected)
-	// }
-	// fnSelectModeCurve := func(_ bool) { fnSelectMode("Curve") }
-	// fnSelectModeTemp := func(_ bool) { fnSelectMode("Temperature") }
-
-	// // Radiogroup would have been nicer, but there is no way to disable one radio option
-	// chkCurve = widget.NewCheck("Curve", fnSelectModeCurve)
-	// if len(ui.config.Curves) < 1 {
-	// 	chkCurve.Disable()
-	// 	chkTemp.Disable()
-	// }
-
-	// chkTemp = widget.NewCheck("Temperature", fnSelectModeTemp)
-
-	// if ui.config.Mode == configuration.ModeTemp {
-	// 	chkCurve.Checked = false
-	// 	chkTemp.Checked = true
-	// } else {
-	// 	chkCurve.Checked = true
-	// 	chkTemp.Checked = false
-	// }
-	// form.Add(canvas.NewText("Mode:", theme.ForegroundColor()))
-	// form.Add(container.NewVBox(chkCurve, chkTemp))
-	// // content.Add(container.NewHBox(chkCurve, chkTemp))
-
-	// // Spacer + Minsize First Column
-	// form.Add(&FixedSpacer{SpacerSize: fyne.NewSize(110, 0)})
-	// form.Add(layout.NewSpacer())
-
 	// Switch Curve
 	curve = widget.NewSelect(ui.config.CurveNames, func(string) {})
 	curve.OnChanged = func(name string) {
@@ -264,59 +198,6 @@ func (ui *FyneUI) showSettingsWindow() {
 		curve.Disable()
 		curveText.Color = theme.DisabledColor()
 	}
-
-	// // Set Target Temperature
-	// tempInput = widget.NewEntry()
-	// tempInput.Text = fmt.Sprintf("%2.1f", ui.config.TargetTemperature)
-	// tempInput.OnChanged = func(value string) {
-	// 	tempInput.TextStyle.Bold = true
-	// 	tempInput.TextStyle.Italic = true
-	// 	tempInput.Refresh()
-	// }
-	// tempInput.OnSubmitted = func(value string) {
-	// 	temp, err := strconv.ParseFloat(value, 32)
-	// 	if err != nil {
-	// 		tempInput.Text = fmt.Sprintf("%2.1f", ui.config.TargetTemperature)
-	// 	}
-	// 	ui.config.TargetTemperature = float32(temp)
-
-	// 	tempInput.TextStyle.Bold = false
-	// 	tempInput.TextStyle.Italic = false
-	// 	tempInput.Refresh()
-	// }
-	// tempText = canvas.NewText("Temperature:", theme.ForegroundColor())
-
-	// form.Add(tempText)
-	// form.Add(tempInput)
-
-	// // Set Maximum Temperature Delta
-	// tempMaxInput = widget.NewEntry()
-	// tempMaxInput.Text = fmt.Sprintf("%2.1f", ui.config.MaximumTemperatureDelta)
-	// tempMaxInput.OnChanged = func(value string) {
-	// 	tempMaxInput.TextStyle.Bold = true
-	// 	tempMaxInput.TextStyle.Italic = true
-	// 	tempMaxInput.Refresh()
-	// }
-	// tempMaxInput.OnSubmitted = func(value string) {
-	// 	temp, err := strconv.ParseFloat(value, 32)
-	// 	if err != nil {
-	// 		tempMaxInput.Text = fmt.Sprintf("%2.1f", ui.config.MaximumTemperatureDelta)
-	// 	}
-	// 	ui.config.MaximumTemperatureDelta = float32(temp)
-
-	// 	tempMaxInput.TextStyle.Bold = false
-	// 	tempMaxInput.TextStyle.Italic = false
-	// 	tempMaxInput.Refresh()
-	// }
-	// tempMaxText = canvas.NewText("Max Delta:", theme.ForegroundColor())
-	// form.Add(tempMaxText)
-	// form.Add(tempMaxInput)
-
-	// if ui.config.Mode == configuration.ModeCurve {
-	// 	fnSelectMode("Curve")
-	// } else {
-	// 	fnSelectMode("Temperature")
-	// }
 
 	win := ui.app.NewWindow("Settings")
 	win.SetContent(content)

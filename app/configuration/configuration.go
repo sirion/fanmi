@@ -12,7 +12,6 @@ import (
 )
 
 type Configuration struct {
-	//	Mode            string  `json:"mode"`
 	CheckIntervalMs uint32  `json:"checkIntervalMs"`
 	MinChange       float32 `json:"minChange"`
 	PowerMode       string  `json:"powerMode"`
