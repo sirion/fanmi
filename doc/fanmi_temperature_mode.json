@@ -1,8 +1,0 @@
-{
-    "checkIntervalMs": 1000,
-    "minChange": 1,
-    "mode": "temperature",
-    "powerMode": "low",
-    "targetTemperature": 50,
-    "maximumTemperatureDelta": 35
-}

@@ -35,13 +35,11 @@ Here are some configuration file examples:
 - [Default configuration](doc/fanmi_default_config.json)
 - [Start with low power](doc/fanmi_low_config.json)
 - [Multiple curves](doc/fanmi_multicurve_config.json)
-- [Temperature mode](doc/fanmi_temperature_mode.json)
 
 The configuration file may contain the following properties:
 
 | Property | default value | |
 | :-       | :- | :- |
-| mode | "curve" | Whether to use curves or simple temperature mode |
 | checkIntervalMs | 3000 |  How often to measure (and update) fan speed (in milliseconds) |
 | minChange | 2.0 | The minimum change that needs to bemeasured (in °C) before a different speed is set |
 | powerMode | "" | The powermode ("auto", "high", "low") of the graphics card |
@@ -117,9 +115,6 @@ When using the console-UI, you can use the following keys:
 |       h | Set power-profile to "high"                |
 |       l | Set power-profile to "low"                 |
 |       c | Switch to next curve                       |
-|       t | Switch between curves and temperature mode |
-|     ⬆️/⬇️ | Change target temperature                  |
-|    ⬅️/➡️ | Change maximum temperature delta           |
 |       q | Quit                                       |
 
 ### Exit codes
