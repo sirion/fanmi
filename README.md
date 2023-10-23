@@ -45,8 +45,6 @@ The configuration file may contain the following properties:
 | powerMode | "" | The powermode ("auto", "high", "low") of the graphics card |
 | curves | [default*](#default-fan-curve) | Map of named fan curves |
 | curve | "default" | The curve active at start-up |
-| targetTemperature | 55 | The target temperature (where the fan-speed goes to 0) |
-| maximumTemperatureDelta | 35 | The number of degrees above the target when the fan speed reaches 100% |
 
 ## CLI Use
 
