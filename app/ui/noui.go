@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sirion/fanmi/app/config"
+	"github.com/sirion/fanmi/app/configuration"
 )
 
 type NoUI struct {
@@ -12,7 +12,7 @@ type NoUI struct {
 	running chan bool
 }
 
-func (ui *NoUI) Init(config *config.Configuration) chan bool {
+func (ui *NoUI) Init(config *configuration.Configuration) chan bool {
 	ui.done = make(chan bool)
 	return ui.done
 }

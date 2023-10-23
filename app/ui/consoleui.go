@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sirion/fanmi/app/config"
+	"github.com/sirion/fanmi/app/configuration"
 	"golang.org/x/term"
 )
 
@@ -13,10 +13,10 @@ type ConsoleUI struct {
 	speed   float32
 	done    chan bool
 	running chan bool
-	config  *config.Configuration
+	config  *configuration.Configuration
 }
 
-func (ui *ConsoleUI) Init(conf *config.Configuration) chan bool {
+func (ui *ConsoleUI) Init(conf *configuration.Configuration) chan bool {
 	ui.config = conf
 	ui.done = make(chan bool, 2)
 	ui.running = make(chan bool, 2)
@@ -30,16 +30,17 @@ func (ui *ConsoleUI) Init(conf *config.Configuration) chan bool {
 		}
 		defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-		bt := make([]byte, 1)
+		bt := make([]byte, 4)
 		for ui.config.Running {
 			n, err := os.Stdin.Read(bt)
 			if err != nil {
 				ui.Message(fmt.Sprintf("Error reading from standard input: %s\n", err.Error()))
-				os.Exit(config.ExitCodeReadStdIn)
+				os.Exit(configuration.ExitCodeReadStdIn)
 			}
+			fmt.Printf("\n\r%x\n", bt[0:n])
 			if n == 0 {
 				ui.Message("End of input from console.\n")
-				os.Exit(config.ExitCodeReadStdIn)
+				os.Exit(configuration.ExitCodeReadStdIn)
 
 			} else if bt[0] == ' ' {
 				// Space toggles active/inactive
@@ -53,6 +54,32 @@ func (ui *ConsoleUI) Init(conf *config.Configuration) chan bool {
 				ui.config.SetPowerMode("high")
 			} else if bt[0] == 'c' {
 				ui.config.NextCurve()
+				// } else if bt[0] == 't' {
+				// 	// Switch between target and Curve mode
+				// 	if ui.config.Mode == configuration.ModeCurve {
+				// 		ui.config.Mode = configuration.ModeTemp
+				// 	} else if len(ui.config.Curves) > 0 {
+				// 		ui.config.Mode = configuration.ModeCurve
+				// 		ui.config.SetCurve(ui.config.CurveNames[0])
+				// 	}
+				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x41 {
+				// 	// Up
+				// 	ui.config.TargetTemperature += 1
+
+				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x42 {
+				// 	// Down
+				// 	ui.config.TargetTemperature -= 1
+
+				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x43 {
+				// 	// Left
+				// 	ui.config.MaximumTemperatureDelta += 1
+
+				// } else if n == 3 && bt[0] == 0x1b && bt[1] == 0x5b && bt[2] == 0x44 {
+				// 	// Left
+				// 	if ui.config.MaximumTemperatureDelta >= 2 {
+				// 		ui.config.MaximumTemperatureDelta -= 1
+				// 	}
+
 			} else if bt[0] == 'q' {
 				ui.Message("Exiting\n")
 				ui.config.Running = false
@@ -114,13 +141,18 @@ func (ui *ConsoleUI) update() {
 		prefix = "[INACTIVE] "
 	}
 	powerMode := ""
-	if ui.config.Mode != "" {
-		powerMode = fmt.Sprintf("\t(Profile: %s)", ui.config.Mode)
-	}
-	curve := ""
-	if len(ui.config.Curves) > 1 {
-		curve = fmt.Sprintf("\t(Curve: %s)", ui.config.CurrentCurve)
+	if ui.config.PowerMode != "" {
+		powerMode = fmt.Sprintf("\t(Profile: %s)", ui.config.PowerMode)
 	}
 
-	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s%s\r", prefix, ui.temp, speedPercent, powerMode, curve)
+	mode := ""
+	// if ui.config.Mode == configuration.ModeCurve {
+	if len(ui.config.Curves) > 1 {
+		mode = fmt.Sprintf("\t(Curve: %s)", ui.config.CurrentCurve)
+	}
+	// } else {
+	// 	mode = fmt.Sprintf("\t(Target: %2.1f° (+%2.1f))", ui.config.TargetTemperature, ui.config.MaximumTemperatureDelta)
+	// }
+
+	fmt.Printf("\r\x1b[0K%sTemperature: %2.0f°\tSpeed: %3.2f%%%s%s\r", prefix, ui.temp, speedPercent, powerMode, mode)
 }

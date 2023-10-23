@@ -1,4 +1,4 @@
-package config
+package configuration
 
 const (
 	ExitCodeOpenDevice           = 1
@@ -17,13 +17,18 @@ const (
 	ExitCodeReadStdIn            = 14
 )
 
+// const (
+// 	ModeCurve = "curve"
+// )
+
 var defaultConfig = Configuration{
-	Running:         true,
-	Active:          true,
-	UI:              "graphic",
+	Running: true,
+	Active:  true,
+	UI:      "graphic",
+	//	Mode:            "curve",
 	CheckIntervalMs: 3000,
-	Mode:            "",
-	MinChange:       2,
+	PowerMode:       "auto",
+	MinChange:       2.0,
 	CurrentCurve:    "",
 	Curves: map[string]Values{
 		"default": {

@@ -1,4 +1,4 @@
-package config
+package configuration
 
 type Entry struct {
 	Temp  float32

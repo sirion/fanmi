@@ -1,4 +1,4 @@
-package config
+package configuration
 
 import (
 	"encoding/json"
@@ -12,18 +12,21 @@ import (
 )
 
 type Configuration struct {
-	Mode            string            `json:"powerMode"`
-	CheckIntervalMs uint              `json:"checkIntervalMs"`
-	MinChange       float32           `json:"minChange"`
-	Curves          map[string]Values `json:"curves"`
-	CurrentCurve    string            `json:"curve"`
+	//	Mode            string  `json:"mode"`
+	CheckIntervalMs uint32  `json:"checkIntervalMs"`
+	MinChange       float32 `json:"minChange"`
+	PowerMode       string  `json:"powerMode"`
 
-	ModeChanged bool     `json:"-"`
-	Running     bool     `json:"-"`
-	Active      bool     `json:"-"`
-	UI          string   `json:"-"`
-	CurveNames  []string `json:"-"`
-	Curve       Values   `json:"-"`
+	// Curve Mode
+	Curves       map[string]Values `json:"curves"`
+	CurrentCurve string            `json:"curve"`
+
+	PowerModeChanged bool     `json:"-"`
+	Running          bool     `json:"-"`
+	Active           bool     `json:"-"`
+	UI               string   `json:"-"`
+	CurveNames       []string `json:"-"`
+	Curve            Values   `json:"-"`
 }
 
 func ReadConfig() *Configuration {
@@ -57,7 +60,7 @@ func ReadConfig() *Configuration {
 	config.loadFromFile(configPath, defaultConfigPath)
 	config.prepareCurves()
 	// Make sure the configured mode is set before reading current mode
-	config.ModeChanged = config.Mode != ""
+	config.PowerModeChanged = config.PowerMode != ""
 
 	debug.LogJSON("Configuration:\n", config, "\n\n")
 
@@ -97,9 +100,9 @@ func showHelp(verbose bool) {
 }
 
 func (c *Configuration) SetPowerMode(mode string) {
-	c.ModeChanged = mode != c.Mode
-	c.Mode = mode
-	debug.Log("Power mode changed to %s (%t)\n", c.Mode, c.ModeChanged)
+	c.PowerModeChanged = mode != c.PowerMode
+	c.PowerMode = mode
+	debug.Log("Power mode changed to %s (%t)\n", c.PowerMode, c.PowerModeChanged)
 }
 
 func (c *Configuration) SetCurve(curveName string) {
@@ -187,8 +190,9 @@ func (config *Configuration) prepareCurves() {
 	}
 
 	if config.CurrentCurve == "" && len(config.Curves) == 1 {
-		for _, curve := range config.Curves {
+		for name, curve := range config.Curves {
 			config.Curve = curve
+			config.CurrentCurve = name
 			break
 		}
 	} else {

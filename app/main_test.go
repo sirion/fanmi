@@ -3,14 +3,14 @@ package main
 import (
 	"testing"
 
-	"github.com/sirion/fanmi/app/config"
+	"github.com/sirion/fanmi/app/configuration"
 )
 
 func Test_calculateStep(t *testing.T) {
 	type args struct {
 		temp      float32
-		lowEntry  config.Entry
-		highEntry config.Entry
+		lowEntry  configuration.Entry
+		highEntry configuration.Entry
 	}
 	tests := []struct {
 		name string
@@ -21,10 +21,10 @@ func Test_calculateStep(t *testing.T) {
 			name: "Same",
 			args: args{
 				temp: 50,
-				lowEntry: config.Entry{
+				lowEntry: configuration.Entry{
 					Temp: 45, Speed: 0.5,
 				},
-				highEntry: config.Entry{
+				highEntry: configuration.Entry{
 					Temp: 55, Speed: 0.5,
 				},
 			},
@@ -34,10 +34,10 @@ func Test_calculateStep(t *testing.T) {
 			name: "Middle",
 			args: args{
 				temp: 50,
-				lowEntry: config.Entry{
+				lowEntry: configuration.Entry{
 					Temp: 45, Speed: 0.4,
 				},
-				highEntry: config.Entry{
+				highEntry: configuration.Entry{
 					Temp: 55, Speed: 0.6,
 				},
 			},
@@ -47,10 +47,10 @@ func Test_calculateStep(t *testing.T) {
 			name: "Min",
 			args: args{
 				temp: 50,
-				lowEntry: config.Entry{
+				lowEntry: configuration.Entry{
 					Temp: 0, Speed: 0,
 				},
-				highEntry: config.Entry{
+				highEntry: configuration.Entry{
 					Temp: 50, Speed: 0.75,
 				},
 			},
@@ -60,10 +60,10 @@ func Test_calculateStep(t *testing.T) {
 			name: "Max",
 			args: args{
 				temp: 50,
-				lowEntry: config.Entry{
+				lowEntry: configuration.Entry{
 					Temp: 50, Speed: 0.1,
 				},
-				highEntry: config.Entry{
+				highEntry: configuration.Entry{
 					Temp: 80, Speed: 0.75,
 				},
 			},
@@ -73,10 +73,10 @@ func Test_calculateStep(t *testing.T) {
 			name: "Random",
 			args: args{
 				temp: 55,
-				lowEntry: config.Entry{
+				lowEntry: configuration.Entry{
 					Temp: 40, Speed: 0,
 				},
-				highEntry: config.Entry{
+				highEntry: configuration.Entry{
 					Temp: 60, Speed: 0.2,
 				},
 			},

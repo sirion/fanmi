@@ -9,29 +9,29 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/sirion/fanmi/app/config"
+	"github.com/sirion/fanmi/app/configuration"
 	"github.com/sirion/fanmi/app/ui"
 )
 
 func main() {
 	// Task: Read Configuration
-	conf := config.ReadConfig()
+	config := configuration.ReadConfig()
 
-	ui := ui.CreateUI(conf.UI)
+	ui := ui.CreateUI(config.UI)
 
-	uiClosed := ui.Init(conf)
+	uiClosed := ui.Init(config)
 	go (func() {
 		<-uiClosed
-		conf.Running = false
+		config.Running = false
 	})()
 
 	u, err := user.Current()
 	if err != nil {
-		ui.Fatal(config.ExitCodeGetUser, fmt.Sprintf("You are not root. Error: %s\n", err.Error()))
+		ui.Fatal(configuration.ExitCodeGetUser, fmt.Sprintf("You are not root. Error: %s\n", err.Error()))
 	}
 	uid := os.Geteuid()
 	if uid != 0 {
-		ui.Fatal(config.ExitCodeRoot, fmt.Sprintf("You are not root: %s\n", u.Username))
+		ui.Fatal(configuration.ExitCodeRoot, fmt.Sprintf("You are not root: %s\n", u.Username))
 	}
 
 	fsDirDrm := os.DirFS("/sys/class/drm/")
@@ -39,10 +39,10 @@ func main() {
 	// Task: Find card /sys/class/drm/card?/device/hwmon/hwmon?
 	pwmMatches, err := fs.Glob(fsDirDrm, "card?/device/hwmon/hwmon?/pwm1")
 	if err != nil {
-		ui.Fatal(config.ExitCodeOpenDevice, fmt.Sprintf("Error opening device: %s\n", err.Error()))
+		ui.Fatal(configuration.ExitCodeOpenDevice, fmt.Sprintf("Error opening device: %s\n", err.Error()))
 	}
 	if len(pwmMatches) == 0 {
-		ui.Fatal(config.ExitCodeFindDevice, "No device found at /sys/class/drm/card?\n")
+		ui.Fatal(configuration.ExitCodeFindDevice, "No device found at /sys/class/drm/card?\n")
 	}
 
 	c := make(chan os.Signal, 1)
@@ -51,8 +51,8 @@ func main() {
 
 	go (func() {
 		<-c
-		conf.Running = false
-		conf.Active = false
+		config.Running = false
+		config.Active = false
 		ui.Message("Signal caught. Exiting.\n")
 	})()
 
@@ -69,12 +69,13 @@ func main() {
 			continue
 		}
 
-		workers = append(workers, fanControl(ui, deviceDirPath, hwmonDirPath, conf))
+		worker := NewFanControl(ui, deviceDirPath, hwmonDirPath, config)
+		workers = append(workers, worker.Run())
 	}
 
 	// Task: Check Compatibility
 	if len(workers) == 0 {
-		ui.Fatal(config.ExitCodeFindCompatibleDevice, "No compatible devices found\n")
+		ui.Fatal(configuration.ExitCodeFindCompatibleDevice, "No compatible devices found\n")
 	}
 
 	ui.Run()

@@ -1,9 +1,9 @@
 package ui
 
-import "github.com/sirion/fanmi/app/config"
+import "github.com/sirion/fanmi/app/configuration"
 
 type UI interface {
-	Init(config *config.Configuration) chan bool
+	Init(config *configuration.Configuration) chan bool
 	Run()
 	Exit()
 	Message(string)
