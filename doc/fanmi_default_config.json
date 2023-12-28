@@ -1,6 +1,8 @@
 {
     "checkIntervalMs": 3000,
     "minChange": 2,
+    "maxStepUp": 4.0,
+    "maxStepDown": 2.0,
     "powerMode": "",
     "curves": {
         "default": [

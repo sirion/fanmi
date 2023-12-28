@@ -130,57 +130,21 @@ func (ui *FyneUI) showSettingsWindow() {
 		ui.config.SetPowerMode(mode)
 	})
 	mode.Selected = ui.config.PowerMode
-	form.Add(modeLabel) // TODO: Move to settings, remove from ui
-	form.Add(mode)      // TODO: Move to settings, remove from ui
-	form.Add(layout.NewSpacer())
-	form.Add(layout.NewSpacer())
+	form.Add(modeLabel)
+	form.Add(mode)
+	AddSpacer(form)
 
 	// Set Change Interval
-	intervalInput := widget.NewEntry()
-	intervalInput.ActionItem = widget.NewButtonWithIcon("", iconSettings, func() {})
-	intervalInput.Text = fmt.Sprintf("%03d", ui.config.CheckIntervalMs)
-	intervalInput.OnChanged = func(value string) {
-		intervalInput.TextStyle.Bold = true
-		intervalInput.TextStyle.Italic = true
-		intervalInput.Refresh()
-	}
-	intervalInput.OnSubmitted = func(value string) {
-		temp, err := strconv.ParseUint(value, 10, 32)
-		if err != nil {
-			intervalInput.Text = fmt.Sprintf("%03d", ui.config.CheckIntervalMs)
-		}
-		ui.config.CheckIntervalMs = uint32(temp)
-
-		intervalInput.TextStyle.Bold = false
-		intervalInput.TextStyle.Italic = false
-		intervalInput.Refresh()
-	}
-	form.Add(canvas.NewText("Interval (ms):", theme.ForegroundColor()))
-	form.Add(intervalInput)
+	AddIntegerField(form, &ui.config.CheckIntervalMs, "Interval (ms):")
 
 	// Set Minimal Temperature Change
-	minChangeInput := widget.NewEntry()
-	minChangeInput.Text = fmt.Sprintf("%2.1f", ui.config.MinChange)
-	minChangeInput.OnChanged = func(value string) {
-		minChangeInput.TextStyle.Bold = true
-		minChangeInput.TextStyle.Italic = true
-		minChangeInput.Refresh()
-	}
-	minChangeInput.OnSubmitted = func(value string) {
-		temp, err := strconv.ParseFloat(value, 32)
-		if err != nil {
-			minChangeInput.Text = fmt.Sprintf("%2.1f", ui.config.MinChange)
-		}
-		ui.config.MinChange = float32(temp)
+	AddDecimalField(form, &ui.config.MinChange, "Min Change (°):")
+	AddSpacer(form)
 
-		minChangeInput.TextStyle.Bold = false
-		minChangeInput.TextStyle.Italic = false
-		minChangeInput.Refresh()
-	}
-	form.Add(canvas.NewText("Min Change (°):", theme.ForegroundColor()))
-	form.Add(minChangeInput)
-	form.Add(layout.NewSpacer())
-	form.Add(layout.NewSpacer())
+	// Set Minimal Up/Down Steps
+	AddDecimalField(form, &ui.config.MaxStepUp, "Max Step Up (%):")
+	AddDecimalField(form, &ui.config.MaxStepDown, "Max Step Down (%):")
+	AddSpacer(form)
 
 	// Switch Curve
 	curve = widget.NewSelect(ui.config.CurveNames, func(string) {})
@@ -237,6 +201,59 @@ func (ui *FyneUI) PowerMode(mode string) {} // Ignored, only shown in settings
 
 func (*FyneUI) Message(message string) {
 	fmt.Print(message)
+}
+
+/// Helper
+
+func AddIntegerField(form *fyne.Container, configValue *uint32, label string) {
+	input := widget.NewEntry()
+	input.Text = fmt.Sprintf("%03d", *configValue)
+	input.OnChanged = func(value string) {
+		input.TextStyle.Bold = true
+		input.TextStyle.Italic = true
+		input.Refresh()
+	}
+	input.OnSubmitted = func(value string) {
+		temp, err := strconv.ParseUint(value, 10, 32)
+		if err != nil {
+			input.Text = fmt.Sprintf("%03d", *configValue)
+		}
+		*configValue = uint32(temp)
+
+		input.TextStyle.Bold = false
+		input.TextStyle.Italic = false
+		input.Refresh()
+	}
+	form.Add(canvas.NewText(label, theme.ForegroundColor()))
+	form.Add(input)
+}
+
+func AddDecimalField(form *fyne.Container, configValue *float32, label string) {
+	input := widget.NewEntry()
+	input.Text = fmt.Sprintf("%2.1f", *configValue)
+	input.OnChanged = func(value string) {
+		input.TextStyle.Bold = true
+		input.TextStyle.Italic = true
+		input.Refresh()
+	}
+	input.OnSubmitted = func(value string) {
+		temp, err := strconv.ParseFloat(value, 32)
+		if err != nil {
+			input.Text = fmt.Sprintf("%2.1f", *configValue)
+		}
+		*configValue = float32(temp)
+
+		input.TextStyle.Bold = false
+		input.TextStyle.Italic = false
+		input.Refresh()
+	}
+	form.Add(canvas.NewText(label, theme.ForegroundColor()))
+	form.Add(input)
+}
+
+func AddSpacer(form *fyne.Container) {
+	form.Add(canvas.NewText(" ", theme.ForegroundColor()))
+	form.Add(canvas.NewText(" ", theme.ForegroundColor()))
 }
 
 var iconApp = fyne.NewStaticResource("appIcon.png", []byte{

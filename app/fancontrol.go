@@ -57,6 +57,7 @@ func (f *FanControl) Run() chan bool {
 	go (func() {
 		powerModeAvailable := true
 		var lastTemp float32 = -500
+		var lastSpeed float32 = -500
 		lastCurve := f.config.Curve
 
 		for f.config.Running {
@@ -84,8 +85,13 @@ func (f *FanControl) Run() chan bool {
 
 			temp := readTemp(f.ui, f.tempInputPath)
 			f.ui.Temperature(temp)
+			speed := readSpeed(f.ui, f.pwmPath)
+			if math.Abs(float64(lastSpeed-speed)) > 0.1 {
+				// If there is more than 10% difference, it is either initial or something is wrong
+				lastSpeed = speed
+			}
+
 			if !f.config.Active {
-				speed := readSpeed(f.ui, f.pwmPath)
 				f.ui.Speed(speed)
 
 				if lastTemp != -500 {
@@ -102,7 +108,7 @@ func (f *FanControl) Run() chan bool {
 				deltaTemp = f.config.MinChange + 1
 			}
 			if math.Abs(float64(deltaTemp)) > float64(f.config.MinChange) {
-				f.byCurve(temp, f.ui, f.pwmPath, f.fanModePath, f.config)
+				f.byCurve(temp, &lastSpeed, f.ui, f.pwmPath, f.fanModePath, f.config)
 				lastTemp = temp
 			}
 			time.Sleep(time.Duration(f.config.CheckIntervalMs) * time.Millisecond)
@@ -117,27 +123,39 @@ func (f *FanControl) Run() chan bool {
 	return f.done
 }
 
-func (f *FanControl) byCurve(temp float32, ui ui.UI, pwmPath, fanModePath string, config *configuration.Configuration) {
+func (f *FanControl) byCurve(temp float32, lastSpeed *float32, ui ui.UI, pwmPath, fanModePath string, config *configuration.Configuration) {
 	writeFile(ui, fanModePath, FANMODE_MANUAL)
 
 	min := config.Curve[0]
 	max := config.Curve[len(config.Curve)-1]
 
+	var factor float32
 	if temp < min.Temp {
-		setSpeed(ui, pwmPath, min.Speed)
+		factor = min.Speed
 	} else if temp >= max.Temp {
-		setSpeed(ui, pwmPath, max.Speed)
+		factor = max.Speed
 	} else {
 		// between min and max
-		var factor float32
 		for i, en := range config.Curve {
 			if temp < en.Temp {
 				factor = calculateStep(temp, config.Curve[i-1], en)
 				break
 			}
 		}
-		setSpeed(ui, pwmPath, factor)
 	}
+
+	maxUp := config.MaxStepUp / 100
+	maxDown := config.MaxStepDown / 100
+
+	delta := factor - *lastSpeed
+	if delta > 0 && delta > maxUp {
+		factor = *lastSpeed + maxUp
+	} else if delta < 0 && delta < 0-maxDown {
+		factor = *lastSpeed - maxDown
+	}
+
+	setSpeed(ui, pwmPath, factor)
+	*lastSpeed = factor
 }
 
 func fileExists(filePath string) bool {
@@ -183,7 +201,7 @@ func readSpeed(ui ui.UI, filePath string) float32 {
 	}
 
 	fSpeed := float32(temp) / 255
-	debug.Log("Read fan speed %f to %s\n", fSpeed, filePath)
+	debug.Log("Read fan speed %f from %s\n", fSpeed, filePath)
 
 	return fSpeed
 }

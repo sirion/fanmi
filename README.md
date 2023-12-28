@@ -45,6 +45,8 @@ The configuration file may contain the following properties:
 | powerMode | "" | The powermode ("auto", "high", "low") of the graphics card |
 | curves | [default*](#default-fan-curve) | Map of named fan curves |
 | curve | "default" | The curve active at start-up |
+| maxStepUp | 4.0 | The maximum upwards % change of the fan per `checkIntervalMs` |
+| maxStepDown | 2.0 | The maximum downwards % change of the fan per `checkIntervalMs` |
 
 ## CLI Use
 

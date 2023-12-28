@@ -28,6 +28,8 @@ var defaultConfig = Configuration{
 	CheckIntervalMs: 3000,
 	PowerMode:       "auto",
 	MinChange:       2.0,
+	MaxStepUp:       4,
+	MaxStepDown:     2,
 	CurrentCurve:    "",
 	Curves: map[string]Values{
 		"default": {

@@ -15,6 +15,8 @@ type Configuration struct {
 	CheckIntervalMs uint32  `json:"checkIntervalMs"`
 	MinChange       float32 `json:"minChange"`
 	PowerMode       string  `json:"powerMode"`
+	MaxStepUp       float32 `json:"maxStepUp"`
+	MaxStepDown     float32 `json:"maxStepDown"`
 
 	// Curve Mode
 	Curves       map[string]Values `json:"curves"`
