@@ -2,6 +2,14 @@
 
 Changelog of the past releases
 
+## v0.4 (2023-12-28)
+
+Step Up/Down Support
+
+### Features
+
+- Support for defining the maximum amount in % that the fan speed can ramp up or down in the defined check interval
+
 ## v0.3.1 (2023-08-17)
 
 ### Features
